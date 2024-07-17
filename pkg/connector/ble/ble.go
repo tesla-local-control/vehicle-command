@@ -121,7 +121,7 @@ func (c *Connection) VIN() string {
 	return c.vin
 }
 
-func NewConnection(ctx context.Context, vin string) (*Connection, error) {
+func NewConnection(ctx context.Context, vin string, BluetoothAdapter string) (*Connection, error) {
 	var err error
 	// We don't want concurrent calls to NewConnection that would defeat
 	// the point of reusing the existing BLE device. Note that this is not
@@ -133,7 +133,13 @@ func NewConnection(ctx context.Context, vin string) (*Connection, error) {
 		log.Debug("Reusing existing BLE device")
 	} else {
 		log.Debug("Creating new BLE device")
-		device, err = newDevice()
+
+	        if BluetoothAdapter == nil || *BluetoothAdapter == "" {
+                	adapter := "hci0"
+                	BluetoothAdapter = &adapter
+        	}
+
+		device, err = newDevice(*BluetoothAdapter)
 		if err != nil {
 			return nil, fmt.Errorf("failed to find a BLE device: %s", err)
 		}

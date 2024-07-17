@@ -114,6 +114,7 @@ const (
 	EnvTeslaKeyringPass  = "TESLA_KEYRING_PASSWORD"
 	EnvTeslaKeyringPath  = "TESLA_KEYRING_PATH"
 	EnvTeslaKeyringDebug = "TESLA_KEYRING_DEBUG"
+	EnvBluetoothAdapter  = "BLUETOOTH_ADAPTER"
 )
 
 // Flag controls what options should be scanned from the command line and/or environment variables.
@@ -128,7 +129,8 @@ const (
 	FlagOAuth      Flag = 2 // Enable OAuth options.
 	FlagPrivateKey Flag = 4 // Enable Private Key options. Required for sending vehicle commands.
 	FlagBLE        Flag = 8 // Enable BLE options. Requires FlagVIN.
-	FlagAll        Flag = FlagVIN | FlagOAuth | FlagPrivateKey | FlagBLE
+	FlagBluetoothAdapter Flag = 8
+	FlagAll        Flag = FlagVIN | FlagOAuth | FlagPrivateKey | FlagBLE | FlagBluetoothAdapter
 )
 
 var (
@@ -149,6 +151,7 @@ type Config struct {
 	Backend          keyring.Config
 	BackendType      backendType
 	Debug            bool // Enable keyring debug messages
+        BluetoothAdapter string
 
 	// Domains can limit a vehicle connection to relevant subsystems, which can reduce
 	// connection latency and avoid waking up the infotainment system unnecessarily.
@@ -180,6 +183,9 @@ func NewConfig(flags Flag) (*Config, error) {
 func (c *Config) RegisterCommandLineFlags() {
 	if c.Flags.isSet(FlagVIN) {
 		flag.StringVar(&c.VIN, "vin", "", "Vehicle Identification Number. Defaults to $TESLA_VIN.")
+	}
+	if c.Flags.isSet(FlagBluetoothAdapter) {
+		flag.Var(&c.BluetoothAdapter, "btinterface", "Select a specific Bluetooth adapter (hci0...hciX")
 	}
 	if c.Flags.isSet(FlagPrivateKey) {
 		if !c.Flags.isSet(FlagVIN) {
@@ -277,6 +283,10 @@ func (c *Config) ReadFromEnvironment() {
 		if !c.Debug {
 			_, c.Debug = os.LookupEnv(EnvTeslaKeyringDebug)
 			log.Debug("Set keyring Debug Logging to '%v'", c.Debug)
+		}
+		if !c.BluetoothAdapter {
+			_, c.Debug = os.LookupEnv(EnvBluetoothAdapter)
+			log.Debug("Set Bluetooth Adapter to '%v'", c.BluetoothAdapter)
 		}
 	}
 }
@@ -460,7 +470,7 @@ func (c *Config) ConnectRemote(ctx context.Context, skey protocol.ECDHPrivateKey
 
 // ConnectLocal connects to a vehicle over BLE.
 func (c *Config) ConnectLocal(ctx context.Context, skey protocol.ECDHPrivateKey) (car *vehicle.Vehicle, err error) {
-	conn, err := ble.NewConnection(ctx, c.VIN)
+	conn, err := ble.NewConnection(ctx, c.VIN, c.BluetoothAdapter)
 	if err != nil {
 		return nil, err
 	}
