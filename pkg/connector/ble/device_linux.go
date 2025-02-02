@@ -5,7 +5,7 @@ import (
 	"github.com/go-ble/ble"
 	"github.com/go-ble/ble/linux"
 	"github.com/go-ble/ble/linux/hci/cmd"
-	"log"
+        "github.com/teslamotors/vehicle-command/internal/log"
 	"time"
 	"os"
 	"path/filepath"
