@@ -29,7 +29,7 @@ func newDevice() (ble.Device, error) {
 	 return nil, fmt.Errorf("failed to find available Bluetooth adapter: %w", err)
     }
 
-    log.Printf("Using Bluetooth adapter: %s", hciName)
+    log.Debug("Using Bluetooth adapter: %s", hciName)
 
     opts := []ble.Option{
 	 ble.OptListenerTimeout(bleTimeout),
