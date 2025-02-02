@@ -29,7 +29,8 @@ func newDevice() (ble.Device, error) {
 	 return nil, fmt.Errorf("failed to find available Bluetooth adapter: %w", err)
     }
 
-    log.Info("Current log level inside newDevice: '%d'", logLevel()) 
+    log.Debug("Current log level inside newDevice: '%d'", logLevel()) 
+    log.Debug("hello")
     log.Debug("Using Bluetooth adapter: '%s'", hciName)
 
     opts := []ble.Option{
